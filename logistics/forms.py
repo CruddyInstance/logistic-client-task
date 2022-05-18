@@ -1,7 +1,6 @@
-from xml.dom import ValidationErr
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Length, Email, EqualTo
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from logistics.models import User
 
 # Form to register new users
@@ -16,12 +15,14 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Sign Up')
 
     def validate_username(self, username):
-        existing_user_username = User.query.filter_by(
-            username = username.data).first()
-        if existing_user_username:
-            raise ValidationErr(
-                "That username already exists. Please choose a different one"
-            )
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('That username is taken. Please choose a different one.')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('That email is taken. Please choose a different one.')
 
 # Form for loging in users
 class LoginForm(FlaskForm):
